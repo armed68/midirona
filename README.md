@@ -104,3 +104,4 @@ pip install pygame numpy
    ```
 
 Have fun! 🎶
+(note my english isnt that good so i use ai for translation)
