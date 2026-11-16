@@ -149,7 +149,7 @@ def main():
         visuals.draw_background(screen)
 
         
-        if mode_mgr.current_song:
+        if mode_mgr.current_song and mode_mgr.current_mode == 'Practice':
             visuals.draw_falling_notes(screen, mode_mgr.current_song, mode_mgr.song_time, keyboard)
 
         

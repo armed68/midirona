@@ -32,11 +32,11 @@ class Button:
         return False
 
     def draw(self, surface, font):
-        bg = (80, 140, 240) if self.active else (self.hover_color if self.is_hovered else self.color)
-        pygame.draw.rect(surface, bg, self.rect, border_radius=6)
-        pygame.draw.rect(surface, (70, 78, 98), self.rect, 1, border_radius=6)
+        bg = (36, 72, 91) if self.active else ((43, 55, 70) if self.is_hovered else (28, 34, 45))
+        pygame.draw.rect(surface, bg, self.rect, border_radius=8)
+        pygame.draw.rect(surface, (52, 72, 88), self.rect, 1, border_radius=8)
 
-        txt_surf = font.render(clean_text(self.text, 200), True, (255, 255, 255) if self.active else self.text_color)
+        txt_surf = font.render(clean_text(self.text, 200), True, (119, 231, 241) if self.active else self.text_color)
         tx = self.rect.centerx - (txt_surf.get_width() // 2)
         ty = self.rect.centery - (txt_surf.get_height() // 2)
         surface.blit(txt_surf, (tx, ty))
@@ -71,6 +71,7 @@ class UIManager:
 
         self._preset_prev_rect = None
         self._preset_next_rect = None
+        self._reverb_dragging = False
 
         self._build_header_buttons()
 
@@ -147,6 +148,14 @@ class UIManager:
         self.active_modal = None
 
     def handle_event(self, event):
+        if self._reverb_dragging and event.type == pygame.MOUSEMOTION:
+            self._set_reverb_from_pos(event.pos)
+            return True
+        if self._reverb_dragging and event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self._set_reverb_from_pos(event.pos)
+            self._reverb_dragging = False
+            return True
+
         # Close modal on ESC
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             if self.active_modal:
@@ -211,7 +220,7 @@ class UIManager:
 
         # Mouse click on timeline seekbar
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            timeline_rect = pygame.Rect(160, self.h - 32, self.w - 470, 18)
+            timeline_rect = pygame.Rect(178, self.h - 34, max(180, self.w - 510), 18)
             if timeline_rect.collidepoint(event.pos):
                 if self.mode_mgr.current_song and self.mode_mgr.current_song.duration > 0:
                     ratio = (event.pos[0] - timeline_rect.x) / float(timeline_rect.width)
@@ -219,13 +228,13 @@ class UIManager:
                 return True
 
             # Play/pause button bottom left
-            play_btn_rect = pygame.Rect(20, self.h - 36, 60, 26)
+            play_btn_rect = pygame.Rect(20, self.h - 39, 68, 28)
             if play_btn_rect.collidepoint(event.pos):
                 self.mode_mgr.toggle_play_pause()
                 return True
 
             # Reset button
-            reset_btn_rect = pygame.Rect(90, self.h - 36, 50, 26)
+            reset_btn_rect = pygame.Rect(96, self.h - 39, 58, 28)
             if reset_btn_rect.collidepoint(event.pos):
                 self.mode_mgr.reset_song()
                 return True
@@ -256,7 +265,7 @@ class UIManager:
     MODAL_SIZES = {
         'modes': (520, 390),
         'songs': (560, 460),
-        'midi': (520, 330),
+        'midi': (520, 400),
         'settings': (520, 390),
         'help': (680, 420),
         'soundfonts': (800, 580),
@@ -404,8 +413,17 @@ class UIManager:
         return [(pygame.Rect(m.x + 20, m.y + 58 + i * 56, m.w - 40, 50), n, d) for i, (n, d) in enumerate(self.MODES_LIST)]
 
     def _midi_rows(self, m):
+        visible = max(1, (m.h - 158) // 40)
         return [(pygame.Rect(m.x + 20, m.y + 58 + i * 40, m.w - 40, 36), dev_id, name)
-                for i, (dev_id, name) in enumerate(self.midi_mgr.available_devices)]
+                for i, (dev_id, name) in enumerate(self.midi_mgr.available_devices[:visible])]
+
+    def _reverb_slider_rect(self, m):
+        return pygame.Rect(m.x + 145, m.bottom - 53, m.w - 205, 8)
+
+    def _set_reverb_from_pos(self, pos):
+        rect = self._reverb_slider_rect(self._modal_rect())
+        amount = (pos[0] - rect.x) / max(1, rect.w)
+        self.synth.set_reverb(min(1.0, max(0.0, amount)))
 
     def _settings_layout(self, m):
         y = m.y + 58
@@ -467,6 +485,11 @@ class UIManager:
                     return True
 
         elif self.active_modal == 'midi':
+            slider = self._reverb_slider_rect(m)
+            if slider.inflate(0, 22).collidepoint(mx, my):
+                self._reverb_dragging = True
+                self._set_reverb_from_pos((mx, my))
+                return True
             for r, dev_id, name in self._midi_rows(m):
                 if r.collidepoint(mx, my):
                     self.midi_mgr.connect(dev_id)
@@ -505,13 +528,15 @@ class UIManager:
             self._draw_modal(surface)
 
     def _draw_header(self, surface):
-        header_rect = pygame.Rect(0, 0, self.w, 44)
-        pygame.draw.rect(surface, (18, 20, 26), header_rect)
-        pygame.draw.line(surface, (38, 42, 54), (0, 44), (self.w, 44), 1)
+        header_rect = pygame.Rect(0, 0, self.w, 48)
+        pygame.draw.rect(surface, (12, 16, 23), header_rect)
+        pygame.draw.line(surface, (34, 46, 58), (0, 48), (self.w, 48), 1)
 
         # Midirona Logo / Title
-        logo_txt = self.font_title.render("MIDIRONA", True, (0, 230, 255))
-        surface.blit(logo_txt, (18, 12))
+        pygame.draw.circle(surface, (83, 220, 220), (28, 23), 6)
+        pygame.draw.circle(surface, (20, 57, 65), (28, 23), 3)
+        logo_txt = self.font_title.render("MIDIRONA", True, (225, 239, 242))
+        surface.blit(logo_txt, (42, 14))
 
         # Update button texts dynamically
         self.header_buttons[0].text = self._fit(f"Mode: {self.mode_mgr.current_mode}", self.font_bold, 104)
@@ -533,6 +558,8 @@ class UIManager:
         self.header_buttons[3].text_color = (100, 255, 140) if has_midi else (180, 190, 205)
 
         for btn in self.header_buttons:
+            btn.rect.y = 10
+            btn.rect.height = 28
             btn.draw(surface, self.font_bold)
 
         # Preset prev/next buttons (< >) right next to SF2 button
@@ -557,38 +584,38 @@ class UIManager:
             self._preset_next_rect = None
 
     def _draw_bottom_hud(self, surface):
-        hud_rect = pygame.Rect(0, self.h - 46, self.w, 46)
-        pygame.draw.rect(surface, (16, 18, 24), hud_rect)
-        pygame.draw.line(surface, (34, 38, 48), (0, self.h - 46), (self.w, self.h - 46), 1)
+        hud_rect = pygame.Rect(0, self.h - 50, self.w, 50)
+        pygame.draw.rect(surface, (12, 16, 23), hud_rect)
+        pygame.draw.line(surface, (34, 46, 58), (0, self.h - 50), (self.w, self.h - 50), 1)
 
         # Play / Pause button
         is_playing = self.mode_mgr.is_playing
-        play_rect = pygame.Rect(20, self.h - 36, 60, 26)
-        pygame.draw.rect(surface, (45, 52, 68), play_rect, border_radius=4)
-        p_txt = self.font_bold.render("PAUSE" if is_playing else "PLAY", True, (255, 255, 255))
+        play_rect = pygame.Rect(20, self.h - 39, 68, 28)
+        pygame.draw.rect(surface, (28, 111, 119), play_rect, border_radius=8)
+        p_txt = self.font_bold.render("PAUSE" if is_playing else "PLAY", True, (238, 255, 255))
         surface.blit(p_txt, (play_rect.centerx - p_txt.get_width()//2, play_rect.centery - p_txt.get_height()//2))
 
         # Reset button
-        rst_rect = pygame.Rect(90, self.h - 36, 50, 26)
-        pygame.draw.rect(surface, (45, 52, 68), rst_rect, border_radius=4)
-        r_txt = self.font.render("RESET", True, (200, 210, 225))
+        rst_rect = pygame.Rect(96, self.h - 39, 58, 28)
+        pygame.draw.rect(surface, (28, 34, 45), rst_rect, border_radius=8)
+        r_txt = self.font.render("RESET", True, (190, 207, 213))
         surface.blit(r_txt, (rst_rect.centerx - r_txt.get_width()//2, rst_rect.centery - r_txt.get_height()//2))
 
         # Timeline Seekbar
         cur_time = self.mode_mgr.song_time
         total_time = self.mode_mgr.current_song.duration if self.mode_mgr.current_song else 1.0
-        bar_x = 160
-        bar_w = self.w - 470
-        bar_y = self.h - 26
-        bar_h = 8
+        bar_x = 178
+        bar_w = max(180, self.w - 510)
+        bar_y = self.h - 25
+        bar_h = 6
 
         # Track
-        pygame.draw.rect(surface, (38, 42, 54), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
+        pygame.draw.rect(surface, (39, 51, 62), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
         # Progress
         progress = max(0.0, min(1.0, cur_time / total_time))
         prog_w = int(bar_w * progress)
         if prog_w > 0:
-            pygame.draw.rect(surface, (0, 210, 255), (bar_x, bar_y, prog_w, bar_h), border_radius=4)
+            pygame.draw.rect(surface, (83, 220, 220), (bar_x, bar_y, prog_w, bar_h), border_radius=4)
         # Handle
         pygame.draw.circle(surface, (255, 255, 255), (bar_x + prog_w, bar_y + 4), 6)
 
@@ -747,6 +774,17 @@ class UIManager:
                 lbl = self.font_bold.render(self._fit(dev_name, self.font_bold, r.w - tag.get_width() - 44), True, (120, 255, 160) if is_con else (230, 235, 245))
                 surface.blit(lbl, (r.x + 14, r.y + 9))
                 surface.blit(tag, (r.right - tag.get_width() - 14, r.y + 11))
+            slider = self._reverb_slider_rect(m)
+            amount = self.synth.reverb_amount
+            value_text = f"{int(amount * 100)}%"
+            surface.blit(self.font_bold.render("Reverb", True, (230, 239, 242)), (m.x + 24, slider.y - 9))
+            pygame.draw.rect(surface, (43, 54, 65), slider, border_radius=5)
+            fill = pygame.Rect(slider.x, slider.y, int(slider.w * amount), slider.h)
+            if fill.w > 0:
+                pygame.draw.rect(surface, (83, 220, 220), fill, border_radius=5)
+            pygame.draw.circle(surface, (236, 248, 248), (slider.x + int(slider.w * amount), slider.centery), 8)
+            value = self.font_bold.render(value_text, True, (150, 215, 218))
+            surface.blit(value, (slider.right + 12, slider.y - 7))
 
         elif self.active_modal == 'settings':
             lay = self._settings_layout(m)

@@ -245,6 +245,7 @@ class SF2Synthesizer:
         self.active_channels = {}  # note -> pygame.mixer.Channel
         self.sustain_pedal = False
         self.sustained_notes = set()
+        self.reverb_amount = 0.0
         self.audio_ok = False
         self.mixer_channels = 2
         self._warned = set()
@@ -313,6 +314,10 @@ class SF2Synthesizer:
             for note in list(self.sustained_notes):
                 self._stop_note_channel(note)
             self.sustained_notes.clear()
+
+    def set_reverb(self, amount):
+        self.reverb_amount = min(1.0, max(0.0, float(amount)))
+        self.sound_cache.clear()
 
     # ------------------------------------------------------------------
     def _select_zones(self, note, velocity):
@@ -429,6 +434,17 @@ class SF2Synthesizer:
             data = ((pcm_l.astype(np.int32) + pcm_r.astype(np.int32)) // 2).astype(np.int16)
         else:
             data = np.ascontiguousarray(np.column_stack((pcm_l, pcm_r)))
+        if self.reverb_amount > 0.0:
+            delays = (0.031, 0.047, 0.071, 0.103)
+            gains = (0.34, 0.25, 0.18, 0.12)
+            tail = int(self.output_rate * delays[-1] * 2)
+            source = data.astype(np.float32)
+            wet = np.zeros((len(source) + tail,) + source.shape[1:], dtype=np.float32)
+            wet[:len(source)] = source
+            for delay, gain in zip(delays, gains):
+                offset = int(self.output_rate * delay)
+                wet[offset:offset + len(source)] += source * (gain * self.reverb_amount)
+            data = np.ascontiguousarray(np.clip(wet, -32767, 32767).astype(np.int16))
         return pygame.sndarray.make_sound(data)
 
     def note_on(self, note, velocity=100):

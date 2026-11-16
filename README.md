@@ -1,9 +1,6 @@
-[README.md](https://github.com/user-attachments/files/34904019/README.md)
-# midirona
-A game for midi keyboard users or just a pc can run ppython that use midi keyboard and van use sf2 .mid files
 # Midirona - SF2 SoundFont Supported Piano Game 🎹
 
-**Midirona** has been developed from the ground up as a **standalone, high-performance desktop game (Python & Pygame & NumPy)**, inspired by [FunkyChickenCape's Pianora prototype on itch.io] btw my version is better (https://funkychickencape.itch.io/pianora)).
+**Midirona** has been developed from the ground up as a **standalone, high-performance desktop game (Python & Pygame & NumPy)**, inspired by [FunkyChickenCape's Pianora prototype on itch.io](https://itch.io).
 
 You can dynamically change game sounds using **.sf2 (SoundFont 2)** files, and play however you like with any external **physical MIDI keyboard/controller**, computer keyboard, or mouse!
 
@@ -104,4 +101,3 @@ pip install pygame numpy
    ```
 
 Have fun! 🎶
-(note my english isnt that good so i use ai for translation)

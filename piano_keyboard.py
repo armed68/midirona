@@ -251,13 +251,13 @@ class PianoKeyboard:
 
     def draw(self, surface):
         
-        casing_rect = pygame.Rect(self.rect.x - 4, self.rect.y - 6, self.rect.width + 8, self.rect.height + 12)
-        pygame.draw.rect(surface, (20, 22, 28), casing_rect, border_radius=6)
-        pygame.draw.rect(surface, (45, 50, 62), casing_rect, 2, border_radius=6)
+        casing_rect = pygame.Rect(self.rect.x - 7, self.rect.y - 9, self.rect.width + 14, self.rect.height + 18)
+        pygame.draw.rect(surface, (13, 18, 25), casing_rect, border_radius=12)
+        pygame.draw.rect(surface, (54, 69, 80), casing_rect, 1, border_radius=12)
 
         
-        felt_rect = pygame.Rect(self.rect.x, self.rect.y - 4, self.rect.width, 4)
-        pygame.draw.rect(surface, (180, 30, 45), felt_rect)
+        felt_rect = pygame.Rect(self.rect.x + 2, self.rect.y - 4, self.rect.width - 4, 3)
+        pygame.draw.rect(surface, (73, 199, 202), felt_rect, border_radius=2)
 
         
         for p, key in self.keys.items():
@@ -286,7 +286,7 @@ class PianoKeyboard:
             
             base_col = (190, 240, 255) if key.expected_hand == 'right' else (255, 235, 185)
         else:
-            base_col = (248, 248, 250)
+            base_col = (229, 235, 236)
 
         
         pygame.draw.rect(surface, base_col, r)
@@ -298,8 +298,8 @@ class PianoKeyboard:
             pygame.draw.line(surface, (100, 130, 160), (r.left, r.top), (r.right, r.top), 3)
         else:
             
-            bottom_lip = pygame.Rect(r.left, r.bottom - 6, r.width, 6)
-            pygame.draw.rect(surface, (215, 218, 225), bottom_lip)
+            bottom_lip = pygame.Rect(r.left + 1, r.bottom - 7, r.width - 2, 7)
+            pygame.draw.rect(surface, (189, 201, 204), bottom_lip, border_radius=2)
             
             pygame.draw.line(surface, (80, 85, 95), (r.right - 1, r.top), (r.right - 1, r.bottom), 1)
 
@@ -315,7 +315,7 @@ class PianoKeyboard:
         elif key.expected:
             base_col = (80, 180, 230) if key.expected_hand == 'right' else (230, 175, 70)
         else:
-            base_col = (28, 30, 36)
+            base_col = (22, 29, 36)
 
         
         pygame.draw.rect(surface, base_col, r, border_bottom_left_radius=3, border_bottom_right_radius=3)
