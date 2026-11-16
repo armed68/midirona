@@ -1,6 +1,12 @@
 # Midirona - SF2 SoundFont Supported Piano Game 🎹
 
-<img width="1918" height="1008" alt="Ekran Kaydı 2026-11-16 203037" src="https://github.com" />
+
+
+https://github.com/user-attachments/assets/2811309a-7311-4604-ae54-4fb1e5408872
+
+
+
+
 
 use pip install -r requirements.txt to install the libarys
 
