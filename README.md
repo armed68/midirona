@@ -1,3 +1,4 @@
+<img width="1918" height="1080" alt="Ekran-Kaydı-2026-11-16-203037" src="https://github.com/user-attachments/assets/dc53c67d-2523-4cd8-9fbf-180e16d06f02" />
 # Midirona - SF2 SoundFont Supported Piano Game 🎹
 
 **Midirona** has been developed from the ground up as a **standalone, high-performance desktop game (Python & Pygame & NumPy)**, inspired by [FunkyChickenCape's Pianora prototype on itch.io](https://itch.io).
