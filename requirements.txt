@@ -1,1 +1,15 @@
-pygame numpy
+# Core application
+pygame
+numpy
+
+# Audio export (FLAC)
+soundfile
+
+# VST2/VST3 effects and VST3 instruments
+vst-audio
+pedalboard>=0.9.26
+
+# FL Studio project import
+pyflp>=2.1.0
+
+# MP3 export also requires the FFmpeg executable on PATH (not installable via pip).
